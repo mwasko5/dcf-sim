@@ -1,0 +1,3 @@
+import traffic_generation
+
+traffic_generation.generate_traffic()
