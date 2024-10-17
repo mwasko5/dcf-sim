@@ -1,8 +1,8 @@
 from numpy import random
 
-def generate_traffic():
+def generate_traffic(lambda_value):
     # -------------- parameters --------------
-    lambda_value = 100 # frames/sec
+    # lambda_value = frames/sec
     slot_duration = 0.00001 # 10 microseconds
 
     # -------------- code --------------
@@ -45,3 +45,5 @@ def generate_traffic():
 
     print("B traffic")
     print(station_B_traffic)
+
+    return station_A_traffic, station_B_traffic
