@@ -38,7 +38,7 @@ def collision_transmit(curr_slot, backoff, collisions):
     collisions += 1
     return curr_slot, collisions
 
-def csma_topology_a(trafficA, trafficB):
+def csma_vcs_topology_a(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
     print(total_slot_count)
