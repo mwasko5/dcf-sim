@@ -62,13 +62,10 @@ def csma_vcs_topology_a(trafficA, trafficB):
     collisions = 0
 
     # run simulation
-    while curr_slot <= total_slot_count:
+    while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
         print(trafficA, trafficB)
         print("slot:", curr_slot)
-        if len(trafficA) == 0 and len(trafficB) == 0:
-            # no more frames to transmit
-            break
-        elif len(trafficA) == 0:
+        if len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
                 curr_slot = trafficB[0] + DIFS
