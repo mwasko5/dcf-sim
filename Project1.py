@@ -1,5 +1,4 @@
 import random
-from turtle import back
 
 # simulation parameters (in slots)
 DIFS = 4
