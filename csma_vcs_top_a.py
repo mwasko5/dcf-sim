@@ -27,18 +27,18 @@ def generate_backoff(cont_window):
 def success_transmit(traffic, curr_slot, backoff, success):
     print("backoff", backoff)    
     frame_slot_count = get_frame_slot_count()
-    curr_slot += backoff + frame_slot_count + SIFS + ACK + DIFS
+    curr_slot += backoff + RTS + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK + DIFS
     traffic.pop(0)
     success += 1
     return curr_slot, success
 
 def collision_transmit(curr_slot, backoff, collisions):
     frame_slot_count = get_frame_slot_count()
-    curr_slot += backoff + frame_slot_count + SIFS + ACK + DIFS
+    curr_slot += backoff + RTS + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK + DIFS
     collisions += 1
     return curr_slot, collisions
 
-def csma_vcs_topology_a(trafficA, trafficB):
+def csma_topology_a(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
     print(total_slot_count)
@@ -65,22 +65,29 @@ def csma_vcs_topology_a(trafficA, trafficB):
     while curr_slot <= total_slot_count:
         print(trafficA, trafficB)
         print("slot:", curr_slot)
-        backoff = generate_backoff(cont_window)
         if len(trafficA) == 0 and len(trafficB) == 0:
             # no more frames to transmit
             break
         elif len(trafficA) == 0:
             # only B has frames to transmit
-            print("transmission B", backoff)
             if trafficB[0] > curr_slot:
-                curr_slot = trafficB[0]
-            curr_slot, successB = success_transmit(trafficB, curr_slot, backoff, successB)
+                curr_slot += DIFS
+            else:
+                if backoffB == 0:
+                    backoffB = generate_backoff(cont_window)
+                print("transmission B", backoffB)
+                curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
+                backoffB = 0
         elif len(trafficB) == 0:
             # only A has frames to transmit
-            print("transmission A", backoff)
             if trafficA[0] > curr_slot:
-                curr_slot = trafficA[0]
-            curr_slot, successA = success_transmit(trafficA, curr_slot, backoff, successA)
+                curr_slot += DIFS
+            else:
+                if backoffA == 0:
+                    backoffA = generate_backoff(cont_window)
+                print("transmission A", backoffA)
+                curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
+                backoffA = 0
         elif max(trafficA[0], trafficB[0]) <= curr_slot:
             # contending transmissions
             if backoffA == 0:
@@ -122,14 +129,20 @@ def csma_vcs_topology_a(trafficA, trafficB):
             if trafficA[0] < trafficB[0]:
                 # A successfully transmits
                 print("transmission A")
-                curr_slot, successA = success_transmit(trafficA, curr_slot, backoff, successA)
+                if backoffA == 0:
+                    backoffA = generate_backoff(cont_window)
+                curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
+                backoffA = 0
             else:
                 # B successfully transmits
                 print("transmission B")
-                curr_slot, successB = success_transmit(trafficB, curr_slot, backoff, successB)
+                if backoffB == 0:
+                    backoffB = generate_backoff(cont_window)
+                curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
+                backoffB = 0
         else:
             # idle channel
-            curr_slot = min(trafficA[0], trafficB[0])
+            curr_slot += DIFS
     
     total_slots = curr_slot - DIFS
     print(total_slots, successA, successB, collisions)
