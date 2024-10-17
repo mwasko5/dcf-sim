@@ -71,7 +71,7 @@ def csma_vcs_topology_a(trafficA, trafficB):
         elif len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
-                curr_slot += DIFS
+                curr_slot = trafficB[0] + DIFS
             else:
                 if backoffB == 0:
                     backoffB = generate_backoff(cont_window)
@@ -81,7 +81,7 @@ def csma_vcs_topology_a(trafficA, trafficB):
         elif len(trafficB) == 0:
             # only A has frames to transmit
             if trafficA[0] > curr_slot:
-                curr_slot += DIFS
+                curr_slot = trafficA[0] + DIFS
             else:
                 if backoffA == 0:
                     backoffA = generate_backoff(cont_window)
@@ -142,7 +142,7 @@ def csma_vcs_topology_a(trafficA, trafficB):
                 backoffB = 0
         else:
             # idle channel
-            curr_slot += DIFS
+            curr_slot = min(trafficA[0], trafficB[0]) + DIFS
     
     total_slots = curr_slot - DIFS
     print(total_slots, successA, successB, collisions)
