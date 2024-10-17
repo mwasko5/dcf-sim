@@ -34,7 +34,7 @@ def success_transmit(traffic, curr_slot, backoff, success):
 
 def collision_transmit(curr_slot, backoff, collisions):
     frame_slot_count = get_frame_slot_count()
-    curr_slot += backoff + RTS + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK + DIFS
+    curr_slot += backoff + RTS + SIFS + CTS + DIFS
     collisions += 1
     return curr_slot, collisions
 
