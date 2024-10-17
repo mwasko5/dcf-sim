@@ -1,5 +1,7 @@
 import random
 
+# test
+
 # simulation parameters (in slots)
 DIFS = 4
 SIFS = 2
