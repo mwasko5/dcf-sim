@@ -42,13 +42,10 @@ def collision_transmit(curr_slot, backoff, collisions):
     collisions += 1
     return curr_slot, collisions
 
-def csma_topology_a(total_slot_count, trafficA, trafficB):
+def csma_topology_a(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
     print(total_slot_count)
-
-    #trafficA, trafficB = generate_traffic()
-    trafficA, trafficB = [10,150,400, 700], [15,250,400, 700]
 
     # initialize current slot to DIFS duration
     curr_slot = DIFS
