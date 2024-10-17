@@ -4,6 +4,8 @@ import random
 DIFS = 4
 SIFS = 2
 ACK = 3
+RTS = 3
+CTS = 3
 cont_window_0 = 8
 cont_window_max = 1024
 
@@ -36,7 +38,7 @@ def collision_transmit(curr_slot, backoff, collisions):
     collisions += 1
     return curr_slot, collisions
 
-def csma_topology_a(trafficA, trafficB):
+def csma_vcs_topology_a(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
     print(total_slot_count)
