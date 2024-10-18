@@ -218,5 +218,3 @@ def csma_topology_a(trafficA, trafficB):
     print(total_slots, successA, successB, collisions)
 
     return total_slots, successA, successB, collisions
-
-csma_topology_a([10, 200, 400, 500, 700], [13, 250, 400, 700])
