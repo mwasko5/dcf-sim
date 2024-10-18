@@ -41,12 +41,13 @@ def csma_topology_a(trafficA, trafficB):
     print("total slots:", total_slot_count)
 
     # initialize current slot to DIFS duration
-    if len(trafficA) == 0:
-        curr_slot = trafficB[0] + DIFS
-    elif len(trafficB) == 0:
-        curr_slot = trafficA[0] + DIFS
-    else:
-        curr_slot = min(trafficA[0], trafficB[0]) + DIFS
+    if len(trafficA) != 0 or len(trafficB) != 0:
+        if len(trafficA) == 0:
+            curr_slot = trafficB[0] + DIFS
+        elif len(trafficB) == 0:
+            curr_slot = trafficA[0] + DIFS
+        else:
+            curr_slot = min(trafficA[0], trafficB[0]) + DIFS
 
     # initialize contention window to initial size
     cont_window = cont_window_0
