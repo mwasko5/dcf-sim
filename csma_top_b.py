@@ -44,8 +44,10 @@ def csma_topology_b(trafficA, trafficB):
     # initialize current slot to DIFS duration
     curr_slot = DIFS
 
+    # NEEDS TO BE UPDATED
     # initialize contention window to initial size
-    cont_window = cont_window_0
+    cont_windowA = cont_window_0
+    cont_windowB = cont_window_0
 
     # initialize collision flag to false
     collision_flag = False
@@ -57,22 +59,22 @@ def csma_topology_b(trafficA, trafficB):
     # initialize performance metric variables
     successA = 0
     successB = 0
-    collisions = 0
+    collisionsA = 0
+    collisionsB = 0
+
+    frame_slot_count = get_frame_slot_count()
 
     # run simulation
-    while curr_slot <= total_slot_count:
+    while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
         print(trafficA, trafficB)
         print("slot:", curr_slot)
-        if len(trafficA) == 0 and len(trafficB) == 0:
-            # no more frames to transmit
-            break
-        elif len(trafficA) == 0:
+        if len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
                 curr_slot = trafficB[0] + DIFS
             else:
                 if backoffB == 0:
-                    backoffB = generate_backoff(cont_window)
+                    backoffB = generate_backoff(cont_windowB)
                 print("transmission B", backoffB)
                 curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
                 backoffB = 0
@@ -82,11 +84,12 @@ def csma_topology_b(trafficA, trafficB):
                 curr_slot = trafficA[0] + DIFS
             else:
                 if backoffA == 0:
-                    backoffA = generate_backoff(cont_window)
+                    backoffA = generate_backoff(cont_windowA)
                 print("transmission A", backoffA)
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
                 backoffA = 0
         elif max(trafficA[0], trafficB[0]) <= curr_slot:
+            # NEEDS TO BE UPDATED
             # contending transmissions
             if backoffA == 0:
                 backoffA = generate_backoff(cont_window)
@@ -98,7 +101,8 @@ def csma_topology_b(trafficA, trafficB):
             if backoffA == backoffB:
                 # collision
                 print("collision", backoffA, backoffB)
-                curr_slot, collisions = collision_transmit(curr_slot, backoffA, collisions)
+                curr_slot, collisionsA = collision_transmit(curr_slot, backoffA, collisionsA)
+                collisionsB += 1
                 backoffA = 0
                 backoffB = 0
                 if cont_window < cont_window_max:
@@ -123,19 +127,23 @@ def csma_topology_b(trafficA, trafficB):
                     cont_window = cont_window_0
                     collision_flag = False
         elif min(trafficA[0], trafficB[0]) <= curr_slot:
+            # NEEDS TO BE UPDATED
             # one successful transmission
             if trafficA[0] < trafficB[0]:
                 # A successfully transmits
                 print("transmission A")
                 if backoffA == 0:
-                    backoffA = generate_backoff(cont_window)
+                    backoffA = generate_backoff(cont_windowA)
+                if trafficB[0] < curr_slot + backoffA + frame_slot_count + SIFS + ACK + DIFS:
+                    # COLLISION
+                    print("collision")
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
                 backoffA = 0
             else:
                 # B successfully transmits
                 print("transmission B")
                 if backoffB == 0:
-                    backoffB = generate_backoff(cont_window)
+                    backoffB = generate_backoff(cont_windowB)
                 curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
                 backoffB = 0
         else:
@@ -143,6 +151,6 @@ def csma_topology_b(trafficA, trafficB):
             curr_slot = min(trafficA[0], trafficB[0]) + DIFS
     
     total_slots = curr_slot - DIFS
-    print(total_slots, successA, successB, collisions)
+    print(total_slots, successA, successB, collisionsA, collisionsB)
 
-    return total_slots, successA, successB, collisions
+    return total_slots, successA, successB, collisionsA, collisionsB
