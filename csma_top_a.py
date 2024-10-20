@@ -41,6 +41,7 @@ def csma_topology_a(trafficA, trafficB):
     print("total slots:", total_slot_count)
 
     # initialize current slot to DIFS duration
+    curr_slot = 0
     if len(trafficA) != 0 or len(trafficB) != 0:
         if len(trafficA) == 0:
             curr_slot = trafficB[0] + DIFS
