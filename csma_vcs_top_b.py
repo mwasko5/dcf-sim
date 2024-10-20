@@ -171,7 +171,7 @@ def csma_vcs_topology_b(trafficA, trafficB):
                 curr_slot = min(trafficA[0], trafficB[0])
             elif timeA < timeB:
                 print("    SUCCESS: transmit A")
-                if timeA + SIFS + CTS < timeB - RTS and timeA + SIFS + CTS > trafficB[0] + DIFS:
+                if timeA + SIFS + CTS < timeB - RTS and timeA + SIFS + CTS >= trafficB[0] + DIFS:
                     backoffB = (timeB - RTS) - (timeA + SIFS + CTS)
                 curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
                 if collision_flagA:
@@ -182,7 +182,7 @@ def csma_vcs_topology_b(trafficA, trafficB):
                     collision_flagB = False
             else:
                 print("    SUCCESS: transmit B")
-                if timeB + SIFS + CTS < timeA - RTS and timeB + SIFS + CTS > trafficA[0] + DIFS:
+                if timeB + SIFS + CTS < timeA - RTS and timeB + SIFS + CTS >= trafficA[0] + DIFS:
                     backoffA = (timeA - RTS) - (timeB + SIFS + CTS)
                 curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
                 if collision_flagA:
@@ -200,8 +200,4 @@ def csma_vcs_topology_b(trafficA, trafficB):
     print("    collisionA:", collisionA)
     print("    collisionB:", collisionB)
 
-csma_vcs_topology_b([10, 200, 400, 500, 700],[250, 400, 700, 1000])
-
-# RTS align - collision
-# RTS b/w other RTS and CTS - no collision
-# RTS and CTS align - no NAV, retry transmit 
+    return curr_slot, successA, successB, collisionA, collisionB

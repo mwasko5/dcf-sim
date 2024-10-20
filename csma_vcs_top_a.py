@@ -24,18 +24,17 @@ def get_frame_slot_count():
 def generate_backoff(cont_window):
     return random.randrange(cont_window - 1)
 
-def success_transmit(traffic, curr_slot, backoff, success):
+def success_transmit(traffic, curr_slot, time, success):
     frame_slot_count = get_frame_slot_count()
-    curr_slot += backoff + RTS + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK + DIFS
+    curr_slot = time + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK
     traffic.pop(0)
     success += 1
     return curr_slot, success
 
-def collision_transmit(curr_slot, backoff, collisions):
-    frame_slot_count = get_frame_slot_count()
-    curr_slot += backoff + RTS + SIFS + CTS + SIFS + frame_slot_count + SIFS + ACK + DIFS
-    collisions += 1
-    return curr_slot, collisions
+def collision_transmit(curr_slot, time, collision):
+    curr_slot = time + SIFS + CTS
+    collision += 1
+    return curr_slot, collision
 
 def csma_vcs_topology_a(trafficA, trafficB):
     # get total slot count
@@ -46,11 +45,11 @@ def csma_vcs_topology_a(trafficA, trafficB):
     curr_slot = 0
     if len(trafficA) != 0 or len(trafficB) != 0:
         if len(trafficA) == 0:
-            curr_slot = trafficB[0] + DIFS
+            curr_slot = trafficB[0]
         elif len(trafficB) == 0:
-            curr_slot = trafficA[0] + DIFS
+            curr_slot = trafficA[0]
         else:
-            curr_slot = min(trafficA[0], trafficB[0]) + DIFS
+            curr_slot = min(trafficA[0], trafficB[0])
 
     # initialize contention window to initial size
     cont_window = cont_window_0
@@ -58,9 +57,9 @@ def csma_vcs_topology_a(trafficA, trafficB):
     # initialize collision flag to false
     collision_flag = False
 
-    # initialize backoff counters to 0
-    backoffA = 0
-    backoffB = 0
+    # initialize backoff counters
+    backoffA = -1
+    backoffB = -1
 
     # initialize performance metric variables
     successA = 0
@@ -69,204 +68,76 @@ def csma_vcs_topology_a(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
-        
-        print(trafficA, trafficB)
-        print("current slot:", curr_slot)
-
+        print("TOP")
+        print("    initial traffic:", trafficA, trafficB)
+        print("    curr_slot:", curr_slot)
         if len(trafficA) == 0:
-            # only B has frames to transmit
-            if trafficB[0] > curr_slot:
-                curr_slot = trafficB[0] + DIFS
-            else:
-                if backoffB == 0:
-                    backoffB = generate_backoff(cont_window)
-                print("transmission B", backoffB)
-                curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                backoffB = 0
-                if collision_flag:
-                    collision_flag = False
-                    cont_window = cont_window_0
+            if trafficB[0] < curr_slot:
+                trafficB[0] = curr_slot
+            print("    adjusted traffic:", trafficA, trafficB)
+            print("    SUCCESS: transmit B")
+            timeB = trafficB[0] + DIFS + generate_backoff(cont_window) + RTS
+            curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
+            if collision_flag:
+                cont_window = cont_window_0
+                collision_flag = False
         elif len(trafficB) == 0:
-            # only A has frames to transmit
-            if trafficA[0] > curr_slot:
-                curr_slot = trafficA[0] + DIFS
+            if trafficA[0] < curr_slot:
+                trafficA[0] = curr_slot
+            print("    adjusted traffic:", trafficA, trafficB)
+            print("    SUCCESS: transmit A")
+            timeA = trafficA[0] + DIFS + generate_backoff(cont_window) + RTS
+            curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
+            if collision_flag:
+                cont_window = cont_window_0
+                collision_flag = False
+        else:
+            if trafficA[0] < curr_slot:
+                trafficA[0] = curr_slot
+            if trafficB[0] < curr_slot:
+                trafficB[0] = curr_slot
+            print("    adjusted traffic:", trafficA, trafficB)
+            if backoffA == -1:
+                timeA = trafficA[0] + DIFS + generate_backoff(cont_window) + RTS
             else:
-                if backoffA == 0:
-                    backoffA = generate_backoff(cont_window)
-                print("transmission A", backoffA)
-                curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                backoffA = 0
-                if collision_flag:
-                    collision_flag = False
-                    cont_window = cont_window_0
-        elif max(trafficA[0], trafficB[0]) <= curr_slot:
-            if backoffA == 0:
-                backoffA = generate_backoff(cont_window)
-            print("backoffA:", backoffA)
-            if backoffB == 0:
-                backoffB = generate_backoff(cont_window)
-            print("backoffB:", backoffB)
-            if backoffA < backoffB:
-                # SUCCESS: transmit A, nonzero backoffB
-                print("transmit A, nonzero backoffB")
-                curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                backoffB -= backoffA
-                backoffA = 0
-                if collision_flag:
-                    collision_flag = False
-                    cont_window = cont_window_0
-            elif backoffA > backoffB:
-                # SUCCESS: transmit B, nonzero backoffA
-                print("transmit B, nonzero backoffA")
-                curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                backoffA -= backoffB
-                backoffB = 0
-                if collision_flag:
-                    collision_flag = False
-                    cont_window = cont_window_0
+                timeA = trafficA[0] + DIFS + backoffA + RTS
+                backoffA = -1
+            if backoffB == -1:
+                timeB = trafficB[0] + DIFS + generate_backoff(cont_window) + RTS
             else:
-                # COLLISION: transmit A and B
-                print("collision, zero backoffs")
-                curr_slot, collisions = collision_transmit(curr_slot, backoffA, collisions)
-                backoffA = 0
-                backoffB = 0
-                collision_flag = True
+                timeB = trafficB[0] + DIFS + backoffB + RTS
+                backoffB = -1
+            print("   ", timeA, timeB)
+            if timeA == timeB:
+                print("    RTS-RTS collision")
+                curr_slot, collisions = collision_transmit(curr_slot, timeA, collisions)
                 if cont_window < cont_window_max:
                     cont_window *= 2
-        elif min(trafficA[0], trafficB[0]) <= curr_slot:
-            if trafficA[0] < trafficB[0]:
-                if backoffA == 0:
-                    backoffA = generate_backoff(cont_window)
-                print("backoffA:", backoffA)
-                print("comparisonFirst:", curr_slot + backoffA, trafficB[0] + DIFS)
-                if curr_slot + backoffA < trafficB[0] + DIFS:
-                    # SUCCESS: transmit A
-                    print("transmit A, zero backoffs")
-                    curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                    backoffA = 0
-                    backoffB = 0
-                    if collision_flag:
-                        collision_flag = False
-                        cont_window = cont_window_0
-                else:
-                    if backoffB == 0:
-                        backoffB = generate_backoff(cont_window)
-                    print("backoffB:", backoffB)
-                    print("comparisonSecond:", curr_slot + backoffA, trafficB[0] + DIFS + backoffB)
-                    if curr_slot + backoffA < trafficB[0] + DIFS + backoffB:
-                        # SUCCESS: transmit A, nonzero backoffB
-                        print("transmit A, nonzero backoffB")
-                        curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                        backoffB -= backoffA
-                        backoffA = 0
-                        if collision_flag:
-                            collision_flag = False
-                            cont_window = cont_window_0
-                    elif curr_slot + backoffA > trafficB[0] + DIFS + backoffB:
-                        # SUCCESS: transmit B, nonzero backoffA
-                        print("transmit B, nonzero backoffA")
-                        curr_slot = trafficB[0] + DIFS
-                        curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                        backoffA -= backoffB
-                        backoffB = 0
-                        if collision_flag:
-                            collision_flag = False
-                            cont_window = cont_window_0
-                    else:
-                        # COLLISION: transmit A and B
-                        print("collision, zero backoffs")
-                        curr_slot, collisions = collision_transmit(curr_slot, backoffA, collisions)
-                        backoffA = 0
-                        backoffB = 0
-                        collision_flag = True
-                        if cont_window < cont_window_max:
-                            cont_window *= 2
-            elif trafficA[0] > trafficB[0]:
-                if backoffB == 0:
-                    backoffB = generate_backoff(cont_window)
-                print("backoffB:", backoffB)
-                print("comparisonFirst:", curr_slot + backoffB, trafficA[0] + DIFS)
-                if curr_slot + backoffB < trafficA[0] + DIFS:
-                    # SUCCESS: transmit B
-                    print("transmit B, zero backoffs")
-                    curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                    backoffA = 0
-                    backoffB = 0
-                    if collision_flag:
-                        collision_flag = False
-                        cont_window = cont_window_0
-                else:
-                    if backoffA == 0:
-                        backoffA = generate_backoff(cont_window)
-                    print("backoffA:", backoffA)
-                    print("comparisonSecond:", curr_slot + backoffB, trafficA[0] + DIFS + backoffA)
-                    if curr_slot + backoffB < trafficA[0] + DIFS + backoffA:
-                        # SUCCESS: transmit B, nonzero backoffA
-                        print("transmit B, nonzero backoffA")
-                        curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                        backoffA -= backoffB
-                        backoffB = 0
-                        if collision_flag:
-                            collision_flag = False
-                            cont_window = cont_window_0
-                    elif curr_slot + backoffB > trafficA[0] + DIFS + backoffA:
-                        # SUCCESS: transmit A, nonzero backoffB
-                        print("transmit A, nonzero backoffB")
-                        curr_slot = trafficA[0] + DIFS
-                        curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                        backoffB -= backoffA
-                        backoffA = 0
-                        if collision_flag:
-                            collision_flag = False
-                            cont_window = cont_window_0
-                    else:
-                        # COLLISION: transmit A and B
-                        print("collision, zero backoffs")
-                        curr_slot, collisions = collision_transmit(curr_slot, backoffA, collisions)
-                        backoffA = 0
-                        backoffB = 0
-                        collision_flag = True
-                        if cont_window < cont_window_max:
-                            cont_window *= 2
+                collision_flag = True
+            elif timeA < timeB:
+                if timeA < timeB - RTS and timeA >= trafficB[0] + DIFS:
+                    backoffB = (timeB - RTS) - timeA
+                    print("    backoffB:", backoffB)
+                print("    SUCCESS: transmit A")
+                curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
+                if collision_flag:
+                    cont_window = cont_window_0
+                    collision_flag = False
             else:
-                if backoffA == 0:
-                    backoffA = generate_backoff(cont_window)
-                print("backoffA:", backoffA)
-                if backoffB == 0:
-                    backoffB = generate_backoff(cont_window)
-                print("backoffB:", backoffB)
-                if backoffA < backoffB:
-                    # SUCCESS: transmit A, nonzero backoffB
-                    print("transmit A, nonzero backoffB")
-                    curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                    backoffB -= backoffA
-                    backoffA = 0
-                    if collision_flag:
-                        collision_flag = False
-                        cont_window = cont_window_0
-                elif backoffA > backoffB:
-                    # SUCCESS: transmit B, nonzero backoffA
-                    print("transmit B, nonzero backoffA")
-                    curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                    backoffA -= backoffB
-                    backoffB = 0
-                    if collision_flag:
-                        collision_flag = False
-                        cont_window = cont_window_0
-                else:
-                    # COLLISION: transmit A and B
-                    print("collision, zero backoffs")
-                    curr_slot, collisions = collision_transmit(curr_slot, backoffA, collisions)
-                    backoffA = 0
-                    backoffB = 0
-                    collision_flag = True
-                    if cont_window < cont_window_max:
-                        cont_window *= 2
-        else:
-            # IDLE: neither A nor B are transmitting yet
-            curr_slot = min(trafficA[0], trafficB[0]) + DIFS
+                if timeB < timeA - RTS and timeB >= trafficA[0] + DIFS:
+                    backoffA = (timeA - RTS) - timeB
+                    print("    backoffA:", backoffA)
+                print("    SUCCESS: transmit B")
+                curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
+                if collision_flag:
+                    cont_window = cont_window_0
+                    collision_flag = False
 
-    total_slots = curr_slot - DIFS
-    print(total_slots, successA, successB, collisions)
+    print("END OF TRANSMISSION")
+    print("    initial traffic:", trafficA, trafficB)
+    print("    curr_slot:", curr_slot)
+    print("    successA:", successA)
+    print("    successB:", successB)
+    print("    collisions:", collisions)
 
-    return total_slots, successA, successB, collisions
+    return curr_slot, successA, successB, collisions
