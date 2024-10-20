@@ -69,8 +69,11 @@ def csma_topology_b(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
+        print("BACKOFF A: ", backoffA)
+        print("BACKOFF B: ", backoffB)
         print(trafficA, trafficB)
         print("slot:", curr_slot)
+        
         if len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
