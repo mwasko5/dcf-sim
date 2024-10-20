@@ -11,8 +11,11 @@ total_collisions_dcf = [[], []]
 
 for l in range(len(lambdas)):
     trafficA, trafficB = traffic_generation.generate_traffic(lambdas[l])
+    trafficA_vcs, trafficB_vcs = trafficA.copy(), trafficB.copy()
+
     total_slots_top_a, successA_top_a, successB_top_a, collisions_top_a = csma_top_a.csma_topology_a(trafficA, trafficB)
-    total_slots_vca_top_a, successA_vcs_top_a, successB_vcs_top_a, collisions_vcs_top_a = csma_vcs_top_a.csma_vcs_topology_a(trafficA, trafficB)
+
+    total_slots_vca_top_a, successA_vcs_top_a, successB_vcs_top_a, collisions_vcs_top_a = csma_vcs_top_a.csma_vcs_topology_a(trafficA_vcs, trafficB_vcs)
 
     total_successA_dcf[0] += [successA_top_a]
     total_successA_dcf[1] += [successA_vcs_top_a]
