@@ -1,7 +1,7 @@
 import traffic_generation
 import csma_top_a
 import csma_vcs_top_a
-import csma_top_b
+#import csma_top_b
 import csma_vcs_top_b
 import plot
 
