@@ -19,11 +19,11 @@ def plot_throughput_A(lambda_values, total_successA_dcf):
 
     plt.plot(lambda_values, throughputA_dcf[0], 'o-', label="Topology A")
     plt.plot(lambda_values, throughputA_dcf[1], 'o-', label="Topology A w/ VCS")
-    #plt.plot(lambda_values, throughputA_dcf[2], 'o-', label="Topology B")
+    plt.plot(lambda_values, throughputA_dcf[2], 'o-', label="Topology B")
     plt.plot(lambda_values, throughputA_dcf[3], 'o-', label="Topology B w/ VCS")
     plt.legend()
     plt.show()
-    #plt.savefig('throughput_A.png')
+    plt.savefig('throughput_A.png')
 
 def plot_throughput_B(lambda_values, total_successB_dcf):
     # Station B throughput vs rate lambda
@@ -43,11 +43,11 @@ def plot_throughput_B(lambda_values, total_successB_dcf):
 
     plt.plot(lambda_values, throughputB_dcf[0], 'o-', label="Topology A")
     plt.plot(lambda_values, throughputB_dcf[1], 'o-', label="Topology A w/ VCS")
-    #plt.plot(lambda_values, throughputB_dcf[2], 'o-', label="Topology B")
+    plt.plot(lambda_values, throughputB_dcf[2], 'o-', label="Topology B")
     plt.plot(lambda_values, throughputB_dcf[3], 'o-', label="Topology B w/ VCS")
     plt.legend()
     plt.show()
-    #plt.savefig('throughput_B.png')
+    plt.savefig('throughput_B.png')
 
 def plot_collision_AP(lambda_values, total_collision_dcf):
     # Collisions at AP vs rate lambda
@@ -75,14 +75,14 @@ def plot_collision_A_B(lambda_values, total_collisionA_dcf, total_collisionB_dcf
     
     plt.title('Figure 4. Collisions N vs. Rate λ (frames/sec) For Hidden Domains')
 
-    #plt.plot(lambda_values, total_collisionA_dcf[2], 'o-', label="Station A topology B")
+    plt.plot(lambda_values, total_collisionA_dcf[2], 'o-', label="Station A topology B")
     plt.plot(lambda_values, total_collisionA_dcf[3], 'o-', label="Station A topology B w/ VCS")
-    #plt.plot(lambda_values, total_collisionB_dcf[2], 'o-', label="Station B topology B")
+    plt.plot(lambda_values, total_collisionB_dcf[2], 'o-', label="Station B topology B")
     plt.plot(lambda_values, total_collisionB_dcf[3], 'o-', label="Station B topology B w/ VCS")
 
     plt.legend()
     plt.show()
-    #plt.savefig('collision_A_B.png')
+    plt.savefig('collision_A_B.png')
 
 def plot_fairness_index(lambda_values, total_successA_dcf, total_successB_dcf, total_collisionA_dcf, total_collisionB_dcf):
     # Fairness index vs rate lambda
@@ -101,9 +101,9 @@ def plot_fairness_index(lambda_values, total_successA_dcf, total_successB_dcf, t
 
     plt.plot(lambda_values, fairness_dcf[0], 'o-', label="Topology A")
     plt.plot(lambda_values, fairness_dcf[1], 'o-', label="Topology A w/ VCS")
-    #plt.plot(lambda_values, fairness_dcf[2], 'o-', label="Topology B")
+    plt.plot(lambda_values, fairness_dcf[2], 'o-', label="Topology B")
     plt.plot(lambda_values, fairness_dcf[3], 'o-', label="Topology B w/ VCS")
 
     plt.legend()
     plt.show()
-    #plt.savefig('collision_A_B.png')
+    plt.savefig('collision_A_B.png')
