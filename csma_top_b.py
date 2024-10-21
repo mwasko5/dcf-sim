@@ -7,8 +7,8 @@ ACK = 3
 cont_window_0 = 8
 cont_window_max = 1024
 
-trafficB = [1, 100, 200]
-trafficA = [2, 101, 201]
+#trafficB = [1, 100, 200]
+#trafficA = [2, 101, 201]
 
 def get_total_slot_count():
     sim_time = 10 # seconds
@@ -69,8 +69,8 @@ def csma_topology_b(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
-        print(trafficA, trafficB)
-        print("slot:", curr_slot)
+        #print(trafficA, trafficB)
+        #print("slot:", curr_slot)
         if len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
@@ -78,8 +78,8 @@ def csma_topology_b(trafficA, trafficB):
             else:
                 if backoffB == 0:
                     backoffB = generate_backoff(cont_windowB)
-                print("transmission B", backoffB)
-                print("curr slot: ", curr_slot)
+                #print("transmission B", backoffB)
+                #print("curr slot: ", curr_slot)
                 curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
                 backoffB = 0
         elif len(trafficB) == 0:
@@ -89,56 +89,60 @@ def csma_topology_b(trafficA, trafficB):
             else:
                 if backoffA == 0:
                     backoffA = generate_backoff(cont_windowA)
-                print("transmission A ", backoffA)
-                print("curr slot: ", curr_slot)
+                #print("transmission A ", backoffA)
+                #print("curr slot: ", curr_slot)
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
                 backoffA = 0
         elif len(trafficA) and len(trafficB) != 0:
-            backoffA = generate_backoff(cont_windowA)
-            backoffB = generate_backoff(cont_windowB)
             if (trafficA[0] + DIFS + backoffA + frame_slot_count + SIFS + ACK) < (trafficB[0] + DIFS + backoffB): # successful A
-                print("SUCCESSFUL A TRANSMISSION")
+                #print("SUCCESSFUL A TRANSMISSION")
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
                 if collision_flag:
                         collision_flag = False
                 cont_windowA = cont_window_0
 
                 generate_backoff(cont_windowA)
+                if backoffB > 0:
+                    backoffB -= 1
             elif (trafficB[0] + DIFS + backoffB + frame_slot_count + SIFS + ACK) < (trafficA[0] + DIFS + backoffA): # successful B
-                print("SUCCESSFUL B TRANSMISSION")
+                #print("SUCCESSFUL B TRANSMISSION")
                 curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
                 if collision_flag:
                         collision_flag = False
                 cont_windowB = cont_window_0
 
                 generate_backoff(cont_windowB)
+                if backoffA > 0:
+                    backoffA -= 1
             else: # collision
                 if (trafficA[0] < trafficB[0]) and ((trafficA[0] + DIFS + backoffA + frame_slot_count + SIFS + ACK) > (trafficB[0] + DIFS + backoffB)): # A is transmitting, B tries to transmit during the A transmission 
                     curr_slot, collisionsB = collision_transmit(curr_slot, backoffB, collisionsB)
                     collision_flag = True
-                    print("COLLISION, A TX, B INTERRUPTION")
-                    print("curr slot: ", curr_slot)
-                    print("BACKOFF A:", backoffA)
-                    print("BACKOFF B: ", backoffB)
-                    print("contention window A: ", cont_windowA)
-                    print("contention window B: ", cont_windowB)
+                    #print("COLLISION, A TX, B INTERRUPTION")
+                    #print("curr slot: ", curr_slot)
+                    #print("BACKOFF A:", backoffA)
+                    #print("BACKOFF B: ", backoffB)
+                    #print("contention window A: ", cont_windowA)
+                    #print("contention window B: ", cont_windowB)
                     if cont_windowB < cont_window_max:
                         cont_windowB *= 2
-                    
-                    #backoffB = generate_backoff(cont_windowB)
+                    backoffB = generate_backoff(cont_windowB)
+                    if backoffA > 0:
+                        backoffA -= 1
                 elif (trafficB[0] < trafficA[0]) and ((trafficB[0] + DIFS + backoffB + frame_slot_count + SIFS + ACK) > (trafficA[0] + DIFS + backoffA)): # B is transmitting, A tries to transmit during the B transmission
                     curr_slot, collisionsA = collision_transmit(curr_slot, backoffA, collisionsA)
                     collision_flag = True
-                    print("COLLISION, B TX, A INTERRUPTION")
-                    print("curr slot: ", curr_slot)
-                    print("BACKOFF A: ", backoffA)
-                    print("BACKOFF B: ", backoffB)
-                    print("contention window A: ", cont_windowA)
-                    print("contention window B: ", cont_windowB)
+                    #print("COLLISION, B TX, A INTERRUPTION")
+                    #print("curr slot: ", curr_slot)
+                    #print("BACKOFF A: ", backoffA)
+                    #print("BACKOFF B: ", backoffB)
+                    #print("contention window A: ", cont_windowA)
+                    #print("contention window B: ", cont_windowB)
                     if cont_windowA < cont_window_max:
                         cont_windowA *= 2
-
-                    #backoffA = generate_backoff(cont_windowA)
+                    backoffA = generate_backoff(cont_windowA)
+                    if backoffB > 0:
+                        backoffB -= 1
         else:
             # idle channel
             curr_slot = min(trafficA[0], trafficB[0]) + DIFS
@@ -151,4 +155,4 @@ def csma_topology_b(trafficA, trafficB):
     
     return total_slots, successA, successB, collisionsA, collisionsB
 
-csma_topology_b(trafficA, trafficB)
+#csma_topology_b(trafficA, trafficB)
