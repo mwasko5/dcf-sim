@@ -46,7 +46,7 @@ def rts_cts_collision_transmit(time, collision):
 def csma_vcs_topology_b(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
-    print("total slots:", total_slot_count)
+    #print("total slots:", total_slot_count)
 
     # initialize current slot to DIFS duration
     curr_slot = 0
@@ -78,14 +78,14 @@ def csma_vcs_topology_b(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
-        print("TOP")
-        print("    initial traffic:", trafficA, trafficB)
-        print("    curr_slot:", curr_slot)
+        #print("TOP")
+        #print("    initial traffic:", trafficA, trafficB)
+        #print("    curr_slot:", curr_slot)
         if len(trafficA) == 0:
             if trafficB[0] < curr_slot:
                 trafficB[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
-            print("    SUCCESS: transmit B")
+            #print("    adjusted traffic:", trafficA, trafficB)
+            #print("    SUCCESS: transmit B")
             timeB = trafficB[0] + DIFS + generate_backoff(cont_windowB) + RTS
             curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
             if collision_flagB:
@@ -94,8 +94,8 @@ def csma_vcs_topology_b(trafficA, trafficB):
         elif len(trafficB) == 0:
             if trafficA[0] < curr_slot:
                 trafficA[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
-            print("    SUCCESS: transmit A")
+            #print("    adjusted traffic:", trafficA, trafficB)
+            #print("    SUCCESS: transmit A")
             timeA = trafficA[0] + DIFS + generate_backoff(cont_windowA) + RTS
             curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
             if collision_flagA:
@@ -106,7 +106,7 @@ def csma_vcs_topology_b(trafficA, trafficB):
                 trafficA[0] = curr_slot
             if trafficB[0] < curr_slot:
                 trafficB[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
+            #print("    adjusted traffic:", trafficA, trafficB)
             if backoffA == -1:
                 timeA = trafficA[0] + DIFS + generate_backoff(cont_windowA) + RTS
             else:
@@ -117,9 +117,9 @@ def csma_vcs_topology_b(trafficA, trafficB):
             else:
                 timeB = trafficB[0] + DIFS + backoffB + RTS
                 backoffB = -1
-            print("   ", timeA, timeB)
+            #print("   ", timeA, timeB)
             if timeA == timeB:
-                print("    RTS-RTS collision")
+                #print("    RTS-RTS collision")
                 curr_slot, collisionA, collisionB = rts_rts_collision_transmit(curr_slot, timeA, collisionA, collisionB)
                 if cont_windowA < cont_window_max:
                     cont_windowA *= 2
@@ -128,19 +128,19 @@ def csma_vcs_topology_b(trafficA, trafficB):
                 collision_flagA = True
                 collision_flagB = True
             elif timeA == timeB + SIFS + CTS:
-                print("    RTS-CTS collision")
+                #print("    RTS-CTS collision")
                 timeB, collisionB = rts_cts_collision_transmit(timeB, collisionB)
                 trafficB[0] = timeB
                 if cont_windowB < cont_window_max:
                     cont_windowB *= 2
                 collision_flagB = True
-                print("    collision B")
+                #print("    collision B")
                 
                 timeA += SIFS + CTS
                 collision_flagA = True
                 while timeA < timeB:
                     collisionA += 1
-                    print("    collision A")
+                    #print("    collision A")
                     if cont_windowA < cont_window_max:
                         cont_windowA *= 2
                     backoffA = generate_backoff(cont_windowA)
@@ -149,19 +149,19 @@ def csma_vcs_topology_b(trafficA, trafficB):
                     timeA += DIFS + backoffA + RTS + SIFS + CTS
                 curr_slot = min(trafficA[0], trafficB[0])
             elif timeA + SIFS + CTS == timeB:
-                print("    CTS-RTS collision")
+                #print("    CTS-RTS collision")
                 timeA, collisionA = rts_cts_collision_transmit(timeA, collisionA)
                 trafficA[0] = timeA
                 if cont_windowA < cont_window_max:
                     cont_windowA *= 2
                 collision_flagA = True
-                print("    collision A")
+                #print("    collision A")
                 
                 timeB += SIFS + CTS
                 collision_flagB = True
                 while timeB < timeA:
                     collisionB += 1
-                    print("    collision B")
+                    #print("    collision B")
                     if cont_windowB < cont_window_max:
                         cont_windowB *= 2
                     backoffB = generate_backoff(cont_windowB)
@@ -170,7 +170,7 @@ def csma_vcs_topology_b(trafficA, trafficB):
                     timeB += DIFS + backoffB + RTS + SIFS + CTS
                 curr_slot = min(trafficA[0], trafficB[0])
             elif timeA < timeB:
-                print("    SUCCESS: transmit A")
+                #print("    SUCCESS: transmit A")
                 if timeA + SIFS + CTS < timeB - RTS and timeA + SIFS + CTS >= trafficB[0] + DIFS:
                     backoffB = (timeB - RTS) - (timeA + SIFS + CTS)
                 curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
@@ -181,7 +181,7 @@ def csma_vcs_topology_b(trafficA, trafficB):
                     cont_windowB = cont_window_0
                     collision_flagB = False
             else:
-                print("    SUCCESS: transmit B")
+                #print("    SUCCESS: transmit B")
                 if timeB + SIFS + CTS < timeA - RTS and timeB + SIFS + CTS >= trafficA[0] + DIFS:
                     backoffA = (timeA - RTS) - (timeB + SIFS + CTS)
                 curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
