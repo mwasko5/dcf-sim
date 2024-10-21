@@ -48,3 +48,7 @@ for l in range(len(lambdas)):
     total_collisionB_dcf[3] += [collisionB_vcs_top_b]
 
 plot.plot_throughput_A(lambdas, total_successA_dcf)
+plot.plot_throughput_B(lambdas, total_successB_dcf)
+plot.plot_collision_AP(lambdas, total_collisionA_dcf)
+plot.plot_collision_A_B(lambdas, total_collisionA_dcf, total_collisionB_dcf)
+plot.plot_fairness_index(lambdas, total_successA_dcf, total_successB_dcf, total_collisionA_dcf, total_collisionB_dcf)
