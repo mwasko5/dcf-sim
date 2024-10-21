@@ -38,7 +38,7 @@ def collision_transmit(curr_slot, time, collision):
 def csma_topology_a(trafficA, trafficB):
     # get total slot count
     total_slot_count = get_total_slot_count()
-    print("total slots:", total_slot_count)
+    #print("total slots:", total_slot_count)
 
     # initialize current slot to DIFS duration
     curr_slot = 0
@@ -67,14 +67,14 @@ def csma_topology_a(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
-        print("TOP")
-        print("    initial traffic:", trafficA, trafficB)
-        print("    curr_slot:", curr_slot)
+        #print("TOP")
+        #print("    initial traffic:", trafficA, trafficB)
+        #print("    curr_slot:", curr_slot)
         if len(trafficA) == 0:
             if trafficB[0] < curr_slot:
                 trafficB[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
-            print("    SUCCESS: transmit B")
+            #print("    adjusted traffic:", trafficA, trafficB)
+            #print("    SUCCESS: transmit B")
             timeB = trafficB[0] + DIFS + generate_backoff(cont_window)
             curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
             if collision_flag:
@@ -83,8 +83,8 @@ def csma_topology_a(trafficA, trafficB):
         elif len(trafficB) == 0:
             if trafficA[0] < curr_slot:
                 trafficA[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
-            print("    SUCCESS: transmit A")
+            #print("    adjusted traffic:", trafficA, trafficB)
+            #print("    SUCCESS: transmit A")
             timeA = trafficA[0] + DIFS + generate_backoff(cont_window)
             curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
             if collision_flag:
@@ -95,7 +95,7 @@ def csma_topology_a(trafficA, trafficB):
                 trafficA[0] = curr_slot
             if trafficB[0] < curr_slot:
                 trafficB[0] = curr_slot
-            print("    adjusted traffic:", trafficA, trafficB)
+            #print("    adjusted traffic:", trafficA, trafficB)
             if backoffA == -1:
                 timeA = trafficA[0] + DIFS + generate_backoff(cont_window)
             else:
@@ -106,9 +106,9 @@ def csma_topology_a(trafficA, trafficB):
             else:
                 timeB = trafficB[0] + DIFS + backoffB
                 backoffB = -1
-            print("   ", timeA, timeB)
+            #print("   ", timeA, timeB)
             if timeA == timeB:
-                print("    COLLISION")
+                #print("    COLLISION")
                 curr_slot, collisions = collision_transmit(curr_slot, timeA, collisions)
                 if cont_window < cont_window_max:
                     cont_window *= 2
@@ -116,8 +116,8 @@ def csma_topology_a(trafficA, trafficB):
             elif timeA < timeB:
                 if timeA >= trafficB[0] + DIFS:
                     backoffB = timeB - timeA
-                    print("    backoffB:", backoffB)
-                print("    SUCCESS: transmit A")
+                    #print("    backoffB:", backoffB)
+                #print("    SUCCESS: transmit A")
                 curr_slot, successA = success_transmit(trafficA, curr_slot, timeA, successA)
                 if collision_flag:
                     cont_window = cont_window_0
@@ -125,8 +125,8 @@ def csma_topology_a(trafficA, trafficB):
             else:
                 if timeB >= trafficA[0] + DIFS:
                     backoffA = timeA - timeB
-                    print("    backoffA:", backoffA)
-                print("    SUCCESS: transmit B")
+                    #print("    backoffA:", backoffA)
+                #print("    SUCCESS: transmit B")
                 curr_slot, successB = success_transmit(trafficB, curr_slot, timeB, successB)
                 if collision_flag:
                     cont_window = cont_window_0
