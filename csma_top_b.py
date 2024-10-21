@@ -26,7 +26,7 @@ def generate_backoff(cont_window):
     return random.randrange(cont_window - 1)
 
 def success_transmit(traffic, curr_slot, backoff, success):
-    print("backoff", backoff)    
+    #print("backoff", backoff)    
     frame_slot_count = get_frame_slot_count()
     curr_slot += backoff + frame_slot_count + SIFS + ACK + DIFS
     traffic.pop(0)
@@ -69,11 +69,8 @@ def csma_topology_b(trafficA, trafficB):
 
     # run simulation
     while curr_slot <= total_slot_count and (len(trafficA) != 0 or len(trafficB) != 0):
-        print("BACKOFF A: ", backoffA)
-        print("BACKOFF B: ", backoffB)
         print(trafficA, trafficB)
         print("slot:", curr_slot)
-        
         if len(trafficA) == 0:
             # only B has frames to transmit
             if trafficB[0] > curr_slot:
@@ -92,52 +89,56 @@ def csma_topology_b(trafficA, trafficB):
             else:
                 if backoffA == 0:
                     backoffA = generate_backoff(cont_windowA)
-                print("transmission A", backoffA)
+                print("transmission A ", backoffA)
                 print("curr slot: ", curr_slot)
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
                 backoffA = 0
         elif len(trafficA) and len(trafficB) != 0:
-            if (trafficA[0] + DIFS + backoffA + get_frame_slot_count() + SIFS + ACK) < (trafficB[0] + DIFS + backoffB): # successful A
+            backoffA = generate_backoff(cont_windowA)
+            backoffB = generate_backoff(cont_windowB)
+            if (trafficA[0] + DIFS + backoffA + frame_slot_count + SIFS + ACK) < (trafficB[0] + DIFS + backoffB): # successful A
                 print("SUCCESSFUL A TRANSMISSION")
                 curr_slot, successA = success_transmit(trafficA, curr_slot, backoffA, successA)
-                backoffA = 0
-                backoffB = 0
                 if collision_flag:
                         collision_flag = False
-                        cont_windowA = cont_window_0
+                cont_windowA = cont_window_0
 
                 generate_backoff(cont_windowA)
-            elif (trafficB[0] + DIFS + backoffB + get_frame_slot_count() + SIFS + ACK) < (trafficA[0] + DIFS + backoffA): # successful B
+            elif (trafficB[0] + DIFS + backoffB + frame_slot_count + SIFS + ACK) < (trafficA[0] + DIFS + backoffA): # successful B
                 print("SUCCESSFUL B TRANSMISSION")
                 curr_slot, successB = success_transmit(trafficB, curr_slot, backoffB, successB)
-                backoffA = 0
-                backoffB = 0
                 if collision_flag:
                         collision_flag = False
-                        cont_windowB = cont_window_0
+                cont_windowB = cont_window_0
 
                 generate_backoff(cont_windowB)
             else: # collision
-                if (trafficA[0] < trafficB[0]) and ((trafficA[0] + DIFS + backoffA + get_frame_slot_count() + SIFS + ACK) > (trafficB[0] + DIFS + backoffB)): # A is transmitting, B tries to transmit during the A transmission 
+                if (trafficA[0] < trafficB[0]) and ((trafficA[0] + DIFS + backoffA + frame_slot_count + SIFS + ACK) > (trafficB[0] + DIFS + backoffB)): # A is transmitting, B tries to transmit during the A transmission 
                     curr_slot, collisionsB = collision_transmit(curr_slot, backoffB, collisionsB)
                     collision_flag = True
                     print("COLLISION, A TX, B INTERRUPTION")
                     print("curr slot: ", curr_slot)
+                    print("BACKOFF A:", backoffA)
+                    print("BACKOFF B: ", backoffB)
+                    print("contention window A: ", cont_windowA)
                     print("contention window B: ", cont_windowB)
                     if cont_windowB < cont_window_max:
                         cont_windowB *= 2
                     
-                    backoffB = generate_backoff(cont_windowB)
-                elif (trafficB[0] < trafficA[0]) and ((trafficB[0] + DIFS + backoffB + get_frame_slot_count() + SIFS + ACK) > (trafficA[0] + DIFS + backoffA)): # B is transmitting, A tries to transmit during the B transmission
+                    #backoffB = generate_backoff(cont_windowB)
+                elif (trafficB[0] < trafficA[0]) and ((trafficB[0] + DIFS + backoffB + frame_slot_count + SIFS + ACK) > (trafficA[0] + DIFS + backoffA)): # B is transmitting, A tries to transmit during the B transmission
                     curr_slot, collisionsA = collision_transmit(curr_slot, backoffA, collisionsA)
                     collision_flag = True
                     print("COLLISION, B TX, A INTERRUPTION")
                     print("curr slot: ", curr_slot)
+                    print("BACKOFF A: ", backoffA)
+                    print("BACKOFF B: ", backoffB)
                     print("contention window A: ", cont_windowA)
+                    print("contention window B: ", cont_windowB)
                     if cont_windowA < cont_window_max:
                         cont_windowA *= 2
 
-                    backoffA = generate_backoff(cont_windowA)
+                    #backoffA = generate_backoff(cont_windowA)
         else:
             # idle channel
             curr_slot = min(trafficA[0], trafficB[0]) + DIFS
